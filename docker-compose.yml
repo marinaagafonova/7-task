@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  mongo:
+    image: marinaagafonova/mongo:latest
+    command: mongod --auth
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGODB_DATA_DIR: ${MONGODB_DATA_DIR}
+      MONDODB_LOG_DIR: ${MONDODB_LOG_DIR}
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodbdata:${MONGODB_DATA_DIR}
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - .app:/app
+    environment:
+      FLASK_ENV: development
+  redishost:
+    image: "redis:alpine"
