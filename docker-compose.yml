@@ -1,25 +1,55 @@
-version: "3.8"
+version: '3'
 services:
-  mongo:
-    image: marinaagafonova/mongo:latest
+
+  flask:
+    build:
+      context: app
+      dockerfile: Dockerfile
+    image: marinaagafonova/task7
+    container_name: flask
+    restart: unless-stopped
+    environment:
+      APP_ENV: "prod"
+      APP_DEBUG: "False"
+      APP_PORT: 5000
+      MONGODB_DATABASE: flaskdb
+      MONGODB_USERNAME: flaskuser
+      MONGODB_PASSWORD: password
+      MONGODB_HOSTNAME: mongodb
+    ports:
+     - 80:5000
+    depends_on:
+      - mongodb
+    networks:
+      - frontend
+      - backend
+
+  mongodb:
+    image: mongo:4.0.8
+    container_name: mongodb
+    restart: unless-stopped
     command: mongod --auth
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
-      MONGODB_DATA_DIR: ${MONGODB_DATA_DIR}
-      MONDODB_LOG_DIR: ${MONDODB_LOG_DIR}
-    ports:
-      - "27017:27017"
+      MONGO_INITDB_ROOT_USERNAME: mongodbuser
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: flaskdb
+      MONGODB_DATA_DIR: /data/db
+      MONDODB_LOG_DIR: /dev/null
     volumes:
-      - mongodbdata:${MONGODB_DATA_DIR}
-  web:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - .app:/app
-    environment:
-      FLASK_ENV: development
-  redishost:
-    image: "redis:alpine"
+      - mongodbdata:/data/db
+    networks:
+      - backend
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge
+
+volumes:
+  mongodbdata:
+    driver: local
+  appdata:
+    driver: local
+  nginxdata:
+    driver: local
